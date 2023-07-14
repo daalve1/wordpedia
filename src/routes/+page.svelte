@@ -277,6 +277,8 @@
             <p>Cargando...</p>
         {:then data}
             {#each wordsTable as word, row} 
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div class="word" on:click={() => showDefinition(row)}>
                     {#each word as letter, col}
                         <div class="letter">
