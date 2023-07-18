@@ -44,7 +44,7 @@
         return wordsWithDefinitions
     }
 
-    // Oculta las letras para mostrarlo al usuario
+    // Oculta las letras de cada palabra para generar el tablero
     function hiddenLetters(word) {
         const rand = Math.floor(Math.random() * word.length)
         
@@ -67,6 +67,8 @@
         finished = false
         correctsRow = []
 
+        selectedRow = -1
+
         start()
     }
 
@@ -84,12 +86,6 @@
         .catch(error => {
             console.error('Error al obtener palabras con definiciones:', error)
         })
-    }
-
-    // Muestra la definición de la palabra seleccionada
-    function showDefinition(row) {
-        selectedRow = row
-        nextEmptyField(row)
     }
 
     // Bloquea la edición de una palabra porque es correcta
@@ -112,7 +108,6 @@
         if(!ended) {
             if(row+1 < words[row].length) {
                 nextEmptyField(row+1, 0)
-                selectedRow = row+1
             }
         }
     }
@@ -138,8 +133,12 @@
     function nextEmptyField(row, col) {
         let isCorrect = checkCorrectWord(row)
 
-        if(isCorrect) return
+        if(isCorrect) {
+            nextEmptyField(row+1, 0)
+            return
+        }
 
+        selectedRow = row
         let el
 
         for(let i=col; i<words[row].length; i++) {
@@ -279,7 +278,7 @@
             {#each wordsTable as word, row} 
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div class="word" on:click={() => showDefinition(row)}>
+                <div class="word" on:click={() => nextEmptyField(row)}>
                     {#each word as letter, col}
                         <div class="letter">
                             <input id="r{row}c{col}"
@@ -322,15 +321,21 @@
         text-align: center;
     }
 
+    #definitions {
+        position: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        bottom: 0;
+        left: 0;
+        background-color: white;
+        width: 100%;
+        box-shadow: 0px 0px 8px 0 rgba(20, 20, 20, 0.3);
+    }
+
     #definitions p {
         display: none;
         text-align: center;
-        width: 80%;
-        margin: 2em auto 3em;
-    }
-
-    .definition {
-        display: none;
     }
 
     .selectedDefinition {
