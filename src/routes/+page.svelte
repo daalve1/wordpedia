@@ -322,7 +322,7 @@
     }
 
     #definitions {
-        position: fixed;
+        position: absolute;
         display: flex;
         align-items: center;
         justify-content: center;
