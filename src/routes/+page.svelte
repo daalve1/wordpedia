@@ -289,6 +289,7 @@
 
 <div class="content">
     <h1>WordPedia</h1>
+    {vh}
     {#if !finished}
         {#if null != fetchWordsDefinitions}
             {#await fetchWordsDefinitions}
