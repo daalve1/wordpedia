@@ -1,5 +1,6 @@
 <script>
     import confetti from "canvas-confetti"
+    import { onMount } from 'svelte'
 
     let words = []
     let wordsTable = []
@@ -10,6 +11,7 @@
     let selectedRow = -1
     let finished = false
     let fetchWordsDefinitions = null
+    let vh
 
     const acentos = {
         'á': 'a',
@@ -138,6 +140,7 @@
             return
         }
 
+        // Seleccionamos la palabra
         selectedRow = row
         let el
 
@@ -149,6 +152,14 @@
                 break
             }  
         }
+
+        recalcViewPort()
+    }
+
+    function recalcViewPort() {
+        const newPosition = vh - getViewPort()
+        let el = document.getElementById('definitions')
+        el.style.bottom = `${newPosition+100}px`
     }
 
     // Función que captura el evento keydown y comprueba que sea la tecla de borrado
@@ -266,55 +277,64 @@
     function eliminaAcentos(cadena) {
         return cadena.replace(/[áéíóúÁÉÍÓÚ]/g, letra => acentos[letra]);
     }
+
+    function getViewPort() {
+        return Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+    }
+
+    onMount(() => {
+        vh = getViewPort()
+    })
 </script>
 
-<h1>WordPedia</h1>
-
-{#if !finished}
-    {#if null != fetchWordsDefinitions}
-        {#await fetchWordsDefinitions}
-            <p>Cargando...</p>
-        {:then data}
-            {#each wordsTable as word, row} 
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div class="word" on:click={() => nextEmptyField(row)}>
-                    {#each word as letter, col}
-                        <div class="letter">
-                            <input id="r{row}c{col}"
-                                type="text" 
-                                value={letter} 
-                                class={letter === "" ? 'r'+row : 'r'+row + ' notempty'}
-                                class:incorrect={row == incorrectRow}
-                                class:correct={correctsRow.includes(row)}
-                                class:selected={row == selectedRow}
-                                maxlength="1"
-                                readonly={letter !== ""}
-                                autocomplete="off"
-                                on:input={() => nextEmptyField(row, col)}
-                                on:keydown={onKeyDown}>
-                        </div>
+<div class="content">
+    <h1>WordPedia</h1>
+    {#if !finished}
+        {#if null != fetchWordsDefinitions}
+            {#await fetchWordsDefinitions}
+                <p>Cargando...</p>
+            {:then data}
+                {#each wordsTable as word, row} 
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <div class="word" on:click={() => nextEmptyField(row)}>
+                        {#each word as letter, col}
+                            <div class="letter">
+                                <input id="r{row}c{col}"
+                                    type="text" 
+                                    value={letter} 
+                                    class={letter === "" ? 'r'+row : 'r'+row + ' notempty'}
+                                    class:incorrect={row == incorrectRow}
+                                    class:correct={correctsRow.includes(row)}
+                                    class:selected={row == selectedRow}
+                                    maxlength="1"
+                                    readonly={letter !== ""}
+                                    autocomplete="off"
+                                    on:input={() => nextEmptyField(row, col)}
+                                    on:keydown={onKeyDown}>
+                            </div>
+                        {/each}
+                    </div>
+                {/each}
+                <div id="definitions">
+                    {#each definitions as definition, i} 
+                        <p id="def{i}" class:selectedDefinition={i == selectedRow}> {definition}</p>
                     {/each}
                 </div>
-            {/each}
-            <div id="definitions">
-                {#each definitions as definition, i} 
-                    <p id="def{i}" class:selectedDefinition={i == selectedRow}> {definition}</p>
-                {/each}
-            </div>
 
-            <button on:click={() => refresh()} class="reset">rerun</button>
-        {:catch error}
-            <p>An error occurred! {error}</p>
-            <button on:click={() => refresh()} class="reset">rerun</button>
-        {/await}
+                <button on:click={() => refresh()} class="reset">rerun</button>
+            {:catch error}
+                <p>An error occurred! {error}</p>
+                <button on:click={() => refresh()} class="reset">rerun</button>
+            {/await}
+        {:else}
+            <button on:click={() => {start()}}>START</button>
+        {/if}
     {:else}
-        <button on:click={() => {start()}}>START</button>
+        <h1>FINISHED</h1>
+        <button on:click={() => refresh()} class="reset">rerun</button>
     {/if}
-{:else}
-    <h1>FINISHED</h1>
-    <button on:click={() => refresh()} class="reset">rerun</button>
-{/if}
+</div>
 
 <style>
     h1 {
@@ -322,14 +342,15 @@
     }
 
     #definitions {
-        position: absolute;
+        position: fixed;
         display: flex;
         align-items: center;
         justify-content: center;
-        bottom: 0;
+        bottom: -100px;
         left: 0;
         background-color: white;
         width: 100%;
+        height: 100px;
         box-shadow: 0px 0px 8px 0 rgba(20, 20, 20, 0.3);
     }
 
@@ -358,7 +379,7 @@
         align-items: center;
         justify-content: center;
         display: inline-block;
-        margin: 12px;
+        margin: 12px 8px;
     }
 
     input {
