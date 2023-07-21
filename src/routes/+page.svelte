@@ -11,7 +11,7 @@
     let selectedRow = -1
     let finished = false
     let fetchWordsDefinitions = null
-    let vh
+    let vh, newPosition
 
     const acentos = {
         'á': 'a',
@@ -153,11 +153,11 @@
             }  
         }
 
-        recalcViewPort()
+        //recalcViewPort()
     }
 
     function recalcViewPort() {
-        const newPosition = vh - getViewPort()
+        newPosition = vh - getViewPort()
         let el = document.getElementById('definitions')
         el.style.bottom = `${newPosition+100}px`
     }
@@ -289,7 +289,7 @@
 
 <div class="content">
     <h1>WordPedia</h1>
-    {vh}
+    
     {#if !finished}
         {#if null != fetchWordsDefinitions}
             {#await fetchWordsDefinitions}
@@ -343,16 +343,15 @@
     }
 
     #definitions {
-        position: fixed;
+        /*position: fixed;*/
         display: flex;
         align-items: center;
         justify-content: center;
-        bottom: -100px;
         left: 0;
         background-color: white;
         width: 100%;
         height: 100px;
-        box-shadow: 0px 0px 8px 0 rgba(20, 20, 20, 0.3);
+        /*box-shadow: 0px 0px 8px 0 rgba(20, 20, 20, 0.3);*/
     }
 
     #definitions p {
